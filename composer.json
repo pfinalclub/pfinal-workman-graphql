@@ -1,0 +1,37 @@
+{
+    "name": "pfinalclub/workerman-graphql",
+    "description": "通用的 Workerman GraphQL API 扩展包，基于 webonyx/graphql-php",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "workerman",
+        "graphql",
+        "php",
+        "api"
+    ],
+    "require": {
+        "php": "^8.0",
+        "workerman/workerman": "^4.0",
+        "webonyx/graphql-php": "^15.0",
+        "psr/http-message": "^1.0 || ^2.0",
+        "psr/log": "^1.0 || ^2.0 || ^3.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.0 || ^10.0",
+        "mockery/mockery": "^1.5",
+        "phpstan/phpstan": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "PFinalClub\\WorkermanGraphQL\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "PFinalClub\\WorkermanGraphQL\\Tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
+
