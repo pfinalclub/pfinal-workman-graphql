@@ -1,6 +1,6 @@
 # Workerman GraphQL
 
-基于 Workerman 与 [`webonyx/graphql-php`](https://github.com/webonyx/graphql-php) 的通用 GraphQL API 扩展包，提供独立运行、Laravel 与 ThinkPHP 集成等多种使用方式。
+基于 Workerman 与 [`webonyx/graphql-php`] 的通用 GraphQL API 扩展包，提供独立运行、Laravel 与 ThinkPHP 集成等多种使用方式。
 
 ## 特性概览
 
@@ -18,6 +18,19 @@ composer require pfinalclub/workerman-graphql
 ```
 
 安装完成后，可按需选择 Workerman 独立模式或集成到现有框架中。
+
+> 📖 **完整文档**: 查看 [docs/](./docs/) 目录获取详细使用文档
+
+## 📚 文档导航
+
+- 📖 [安装与初始化](./docs/installation.md) - 系统要求、安装步骤、运行模式
+- 🚀 [快速开始](./docs/quickstart.md) - 5 分钟快速上手，包含完整示例
+- 📐 [Schema 定义指南](./docs/schema.md) - 代码式和 SDL 两种定义方式详解
+- 🔌 [中间件使用](./docs/middleware.md) - 内置中间件和自定义中间件开发
+- ⚙️ [配置选项](./docs/configuration.md) - 所有配置选项详细说明
+- 🔗 [框架集成](./docs/integration.md) - Laravel 和 ThinkPHP 集成详解
+- ✨ [最佳实践](./docs/best-practices.md) - 性能优化、安全实践、代码组织
+- ❓ [常见问题](./docs/troubleshooting.md) - 问题排查和解决方案
 
 ## 快速开始（独立服务）
 
