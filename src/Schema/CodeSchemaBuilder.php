@@ -8,7 +8,7 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema as GraphQLSchema;
 use InvalidArgumentException;
-use RuntimeException;
+use PFinalClub\WorkermanGraphQL\Exception\SchemaException;
 
 final class CodeSchemaBuilder implements SchemaBuilderInterface
 {
@@ -79,7 +79,7 @@ final class CodeSchemaBuilder implements SchemaBuilderInterface
     public function build(): GraphQLSchema
     {
         if (empty($this->queries)) {
-            throw new RuntimeException('GraphQL schema must define at least one query field.');
+            throw new SchemaException('GraphQL schema must define at least one query field.');
         }
 
         $schemaConfig = [

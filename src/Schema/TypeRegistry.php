@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace PFinalClub\WorkermanGraphQL\Schema;
 
 use GraphQL\Type\Definition\Type;
-use RuntimeException;
+use PFinalClub\WorkermanGraphQL\Exception\SchemaException;
 
 final class TypeRegistry
 {
@@ -22,7 +22,7 @@ final class TypeRegistry
     public function get(string $name): Type
     {
         if (!$this->has($name)) {
-            throw new RuntimeException(sprintf('Type "%s" is not registered.', $name));
+            throw new SchemaException(sprintf('Type "%s" is not registered.', $name));
         }
 
         return $this->types[$name];

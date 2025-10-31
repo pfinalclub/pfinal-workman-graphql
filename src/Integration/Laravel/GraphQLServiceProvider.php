@@ -7,13 +7,13 @@ namespace PFinalClub\WorkermanGraphQL\Integration\Laravel;
 use GraphQL\Type\Schema as GraphQLSchema;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use PFinalClub\WorkermanGraphQL\Exception\ConfigurationException;
 use PFinalClub\WorkermanGraphQL\GraphQLEngine;
 use PFinalClub\WorkermanGraphQL\Middleware\MiddlewareInterface;
 use PFinalClub\WorkermanGraphQL\Middleware\MiddlewarePipeline;
 use PFinalClub\WorkermanGraphQL\Schema\CodeSchemaBuilder;
 use PFinalClub\WorkermanGraphQL\Schema\SchemaBuilderInterface;
 use PFinalClub\WorkermanGraphQL\Schema\SdlSchemaBuilder;
-use RuntimeException;
 
 final class GraphQLServiceProvider extends ServiceProvider
 {
@@ -33,7 +33,7 @@ final class GraphQLServiceProvider extends ServiceProvider
             } elseif ($schemaSource instanceof SchemaBuilderInterface) {
                 $engine->setSchemaFactory(fn(): GraphQLSchema => $schemaSource->build());
             } else {
-                throw new RuntimeException('Invalid schema configuration for Workerman GraphQL.');
+                throw new ConfigurationException('Invalid schema configuration for Workerman GraphQL.');
             }
 
             return $engine;

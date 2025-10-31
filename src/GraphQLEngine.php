@@ -9,6 +9,7 @@ use GraphQL\Error\Error;
 use GraphQL\GraphQL;
 use GraphQL\Type\Schema;
 use JsonException;
+use PFinalClub\WorkermanGraphQL\Exception\SchemaException;
 use PFinalClub\WorkermanGraphQL\Http\JsonResponse;
 use PFinalClub\WorkermanGraphQL\Http\RequestInterface;
 use PFinalClub\WorkermanGraphQL\Http\Response;
@@ -36,10 +37,15 @@ final class GraphQLEngine
 
     private bool $debug;
 
+    private ?\DateTimeImmutable $schemaCacheTime = null;
+
+    private int $schemaCacheTTL = 3600;
+
     public function __construct(?Schema $schema = null, bool $debug = false)
     {
         if ($schema instanceof Schema) {
             $this->schema = $schema;
+            $this->schemaCacheTime = new \DateTimeImmutable();
         }
 
         $this->debug = $debug;
@@ -48,6 +54,7 @@ final class GraphQLEngine
     public function setSchema(Schema $schema): void
     {
         $this->schema = $schema;
+        $this->schemaCacheTime = new \DateTimeImmutable();
     }
 
     /**
@@ -79,13 +86,24 @@ final class GraphQLEngine
         $this->debug = $debug;
     }
 
+    public function setSchemaCacheTTL(int $seconds): void
+    {
+        $this->schemaCacheTTL = max(0, $seconds);
+    }
+
+    public function clearSchemaCache(): void
+    {
+        $this->schema = null;
+        $this->schemaCacheTime = null;
+    }
+
     public function handle(RequestInterface $request): ResponseInterface
     {
         try {
             $payload = $this->parseGraphQLRequest($request);
 
             if ($payload === null || empty($payload['query'])) {
-                return JsonResponse::create(
+                return JsonResponse::fromData(
                     ['errors' => [['message' => 'Invalid GraphQL request payload']]],
                     400
                 );
@@ -109,7 +127,7 @@ final class GraphQLEngine
                 $result->setErrorFormatter($this->errorFormatter);
             }
 
-            return JsonResponse::create($result->toArray($debugFlags));
+            return JsonResponse::fromData($result->toArray($debugFlags));
         } catch (Throwable $exception) {
             return $this->createErrorResponse($exception);
         }
@@ -117,23 +135,41 @@ final class GraphQLEngine
 
     private function resolveSchema(): Schema
     {
+        // 如果 schema 已设置且缓存有效，直接返回
         if ($this->schema instanceof Schema) {
-            return $this->schema;
+            if ($this->schemaCacheTime === null || $this->isSchemaCacheValid()) {
+                return $this->schema;
+            }
+            // 缓存失效，清除并重新构建
+            $this->schema = null;
+            $this->schemaCacheTime = null;
         }
 
         if ($this->schemaFactory !== null) {
             $schema = ($this->schemaFactory)();
 
             if (!$schema instanceof Schema) {
-                throw new RuntimeException('Schema factory must return an instance of ' . Schema::class);
+                throw new SchemaException('Schema factory must return an instance of ' . Schema::class);
             }
 
             $this->schema = $schema;
+            $this->schemaCacheTime = new \DateTimeImmutable();
 
             return $schema;
         }
 
-        throw new RuntimeException('GraphQL schema is not configured.');
+        throw new SchemaException('GraphQL schema is not configured.');
+    }
+
+    private function isSchemaCacheValid(): bool
+    {
+        if ($this->schemaCacheTime === null || $this->schemaCacheTTL <= 0) {
+            return false;
+        }
+
+        $elapsed = (new \DateTimeImmutable())->getTimestamp() - $this->schemaCacheTime->getTimestamp();
+
+        return $elapsed < $this->schemaCacheTTL;
     }
 
     private function createContext(RequestInterface $request): Context
@@ -142,7 +178,7 @@ final class GraphQLEngine
             $context = ($this->contextFactory)($request);
 
             if (!$context instanceof Context) {
-                throw new RuntimeException('Context factory must return an instance of ' . Context::class);
+                throw new SchemaException('Context factory must return an instance of ' . Context::class);
             }
 
             return $context;
@@ -262,14 +298,10 @@ final class GraphQLEngine
         }
 
         try {
-            return JsonResponse::create($error, 500);
+            return JsonResponse::fromData($error, 500);
         } catch (JsonException) {
             return Response::create(500, ['Content-Type' => 'text/plain; charset=utf-8'], 'Internal server error');
         }
     }
-}
-
-class RuntimeException extends \RuntimeException
-{
 }
 

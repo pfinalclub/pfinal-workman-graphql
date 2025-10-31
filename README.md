@@ -138,8 +138,8 @@ $server->useSchemaBuilder($builder);
 - [x] Phase 5: 中间件系统
 - [x] Phase 6: 框架集成
 - [ ] Phase 7: 工具与辅助
-- [ ] Phase 8: 示例与文档
-- [ ] Phase 9: 测试
+- [x] Phase 8: 示例与文档
+- [x] Phase 9: 测试
 
 ## 许可协议
 

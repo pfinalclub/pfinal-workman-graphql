@@ -30,7 +30,7 @@ final class ErrorHandlerMiddleware implements MiddlewareInterface
                 $payload['errors'][0]['trace'] = $exception->getTraceAsString();
             }
 
-            return JsonResponse::create($payload, 500);
+            return JsonResponse::fromData($payload, 500);
         }
     }
 }

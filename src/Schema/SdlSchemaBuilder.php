@@ -6,7 +6,7 @@ namespace PFinalClub\WorkermanGraphQL\Schema;
 
 use GraphQL\Type\Schema as GraphQLSchema;
 use GraphQL\Utils\BuildSchema;
-use RuntimeException;
+use PFinalClub\WorkermanGraphQL\Exception\SchemaException;
 
 final class SdlSchemaBuilder implements SchemaBuilderInterface
 {
@@ -32,13 +32,13 @@ final class SdlSchemaBuilder implements SchemaBuilderInterface
     public function fromFile(string $path): self
     {
         if (!is_file($path)) {
-            throw new RuntimeException(sprintf('SDL file "%s" does not exist.', $path));
+            throw new SchemaException(sprintf('SDL file "%s" does not exist.', $path));
         }
 
         $contents = file_get_contents($path);
 
         if ($contents === false) {
-            throw new RuntimeException(sprintf('Failed to read SDL file "%s".', $path));
+            throw new SchemaException(sprintf('Failed to read SDL file "%s".', $path));
         }
 
         $this->sdl = $contents;
@@ -61,7 +61,7 @@ final class SdlSchemaBuilder implements SchemaBuilderInterface
         foreach ($resolvers as $type => $fields) {
             foreach ($fields as $field => $resolver) {
                 if (!is_callable($resolver)) {
-                    throw new RuntimeException(sprintf('Resolver for %s.%s must be callable.', $type, $field));
+                    throw new SchemaException(sprintf('Resolver for %s.%s must be callable.', $type, $field));
                 }
 
                 $this->setResolver($type, (string) $field, $resolver);
@@ -84,7 +84,7 @@ final class SdlSchemaBuilder implements SchemaBuilderInterface
     public function build(): GraphQLSchema
     {
         if ($this->sdl === '') {
-            throw new RuntimeException('SDL schema string is empty.');
+            throw new SchemaException('SDL schema string is empty.');
         }
 
         $fieldResolvers = $this->fieldResolvers;

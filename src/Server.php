@@ -116,6 +116,20 @@ final class Server
         return $this;
     }
 
+    public function setSchemaCacheTTL(int $seconds): self
+    {
+        $this->engine->setSchemaCacheTTL($seconds);
+
+        return $this;
+    }
+
+    public function clearSchemaCache(): self
+    {
+        $this->engine->clearSchemaCache();
+
+        return $this;
+    }
+
     private function handleRequest(RequestInterface $request): ResponseInterface
     {
         $endpoint = $this->config['endpoint'];
@@ -135,6 +149,12 @@ final class Server
 
     private function shouldServeGraphiQL(RequestInterface $request): bool
     {
+        // 生产环境检查
+        $appEnv = $_ENV['APP_ENV'] ?? $_SERVER['APP_ENV'] ?? 'development';
+        if ($appEnv === 'production') {
+            return false;
+        }
+
         if (!$this->config['graphiql']) {
             return false;
         }
@@ -146,15 +166,20 @@ final class Server
 
     private function graphiqlHtml(): string
     {
+        // 生成 CSP nonce 以防止 XSS
+        $nonce = base64_encode(random_bytes(16));
+        $endpoint = htmlspecialchars($this->config['endpoint'], ENT_QUOTES, 'UTF-8');
+
         return <<<HTML
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'nonce-{$nonce}' https://unpkg.com; style-src 'self' 'nonce-{$nonce}' https://unpkg.com; connect-src 'self'; img-src 'self' data:; font-src 'self' data:;" />
     <title>GraphiQL</title>
     <meta name="robots" content="noindex" />
     <meta name="referrer" content="origin" />
-    <style>
+    <style nonce="{$nonce}">
         html, body { height: 100%; margin: 0; overflow: hidden; }
         #graphiql { height: 100vh; }
     </style>
@@ -162,11 +187,11 @@ final class Server
 </head>
 <body>
     <div id="graphiql">Loading...</div>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/graphiql/graphiql.min.js"></script>
-    <script>
-        const graphQLEndpoint = window.location.origin + '{$this->config['endpoint']}';
+    <script nonce="{$nonce}" crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script nonce="{$nonce}" crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script nonce="{$nonce}" src="https://unpkg.com/graphiql/graphiql.min.js"></script>
+    <script nonce="{$nonce}">
+        const graphQLEndpoint = window.location.origin + '{$endpoint}';
         const fetcher = GraphiQL.createFetcher({ url: graphQLEndpoint });
         const root = ReactDOM.createRoot(document.getElementById('graphiql'));
         root.render(React.createElement(GraphiQL, { fetcher }));

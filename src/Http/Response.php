@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PFinalClub\WorkermanGraphQL\Http;
 
-final class Response implements ResponseInterface
+class Response implements ResponseInterface
 {
     /**
      * @param array<string, string|string[]> $headers
@@ -17,7 +17,7 @@ final class Response implements ResponseInterface
         $this->headers = $this->normalizeHeaders($headers);
     }
 
-    public static function create(int $statusCode = 200, array $headers = [], string $body = ''): self
+    public static function create(int $statusCode = 200, array $headers = [], string $body = ''): static
     {
         return new self($statusCode, $headers, $body);
     }
@@ -67,6 +67,23 @@ final class Response implements ResponseInterface
         $clone->body = $body;
 
         return $clone;
+    }
+
+    public function getHeader(string $name, ?string $default = null): ?string
+    {
+        $lowerName = strtolower($name);
+
+        foreach ($this->headers as $key => $value) {
+            if (strtolower($key) === $lowerName) {
+                if (is_array($value)) {
+                    return (string) reset($value);
+                }
+
+                return (string) $value;
+            }
+        }
+
+        return $default;
     }
 
     /**

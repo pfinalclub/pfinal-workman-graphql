@@ -31,12 +31,12 @@ final class JsonResponse extends Response
      * @param array<string, string|string[]> $headers
      * @throws JsonException
      */
-    public static function create(
+    public static function fromData(
         array $data,
         int $statusCode = 200,
         array $headers = [],
         int $encodingOptions = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
-    ): self {
+    ): static {
         return new self($data, $statusCode, $headers, $encodingOptions);
     }
 }
